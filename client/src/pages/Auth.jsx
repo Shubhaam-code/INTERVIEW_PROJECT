@@ -1,14 +1,17 @@
 import React from 'react'
 import { BsRobot } from 'react-icons/bs'
 import { IoSparkles } from 'react-icons/io5'
-import { motion } from 'motion/react'
+import { motion } from 'framer-motion'
 import { FcGoogle } from "react-icons/fc";
 import { linkWithCredential, signInWithPopup } from 'firebase/auth';
 import { auth,provider } from '../utils/firebase';
 import axios from "axios"
 import { ServerUrl } from '../App';
+import { setUserData } from '../../redux/userSlice';
+import { useDispatch } from 'react-redux';
 
 function Auth() {
+  const dispatch = useDispatch()
   const handleGoogleAuth = async ()=>{
       try{
         const response = await signInWithPopup( auth ,provider)
@@ -16,9 +19,10 @@ function Auth() {
         let name = User.displayName
         let email = User.email
         const result = await axios.post(ServerUrl + "/api/auth/google" , {name,email},{withCredentials:true})
-        console.log(result)
+        dispatch(setUserData(result.data))
       }catch(error){
         console.log(error)
+        dispatch(setUserData(null))
       }
     }
   return (
@@ -53,7 +57,7 @@ function Auth() {
         <motion.button onClick={handleGoogleAuth}
 
         whileHover={{opacity:0.9 , scale:1.03}}
-        whileTrap={{opacity:1 ,scale:0.98}}
+        whileTap={{opacity:1 ,scale:0.98}}
 
          className='w-full flex items-center justify-center gap-3 py-3 bg-black text-white rounded-full shadow-md'>
           <FcGoogle size={20}  />Continue with Google</motion.button>
