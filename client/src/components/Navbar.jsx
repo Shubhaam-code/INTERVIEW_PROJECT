@@ -10,6 +10,7 @@ import { setUserData } from '../../redux/userSlice'
 import axios from 'axios'
 import AuthModel from './AuthModel'
 
+
 function Navbar() {
 
   const { userData } = useSelector((state) => state.user)
