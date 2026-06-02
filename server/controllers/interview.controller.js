@@ -227,9 +227,23 @@ skills, and resume details.
 
 export const submitAnswer = async (req,res) =>{
     try {
-        const {interviewId,questionInterview,answer,timeTaken} = req.body
+        const {interviewId,questionIndex,questionInterview,answer,timeTaken} = req.body
         const interview = await Interview.findById(interviewId)
-        const question = interview.questions[questionInterview]
+        if (!interview) {
+            return res.status(404).json({
+                message: "Interview not found",
+                success: false
+            })
+        }
+
+        const index = questionIndex !== undefined ? questionIndex : questionInterview;
+        const question = interview.questions[index]
+        if (!question) {
+            return res.status(404).json({
+                message: "Question not found at index " + index,
+                success: false
+            })
+        }
         if(!answer){
             question.score=0;
             question.feedback="Incomplete answer";
@@ -378,8 +392,8 @@ export const finishInterview = async (req,res) => {
         ? totalCorrectness / totalQuestions
         : 0;
 
-        interview.finalScore = finalScore;
-        interview.status = "completed";
+        interview.final = finalScore;
+        interview.status = "Completed";
 
         await interview.save();
 
