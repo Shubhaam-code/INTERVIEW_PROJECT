@@ -8,7 +8,7 @@ const isAuth = (req,res,next)=>{
             return res.status(400).json({message:"user does not have a token"})
         }
 
-        // token jwt ke through karwate ha
+        // token jwt ke through verify karwate ha
 
         const verifyToken = jwt.verify(token,process.env.JWT_SECRET)
 
