@@ -15,6 +15,17 @@
   box-sizing: border-box;
 }
 
+/* ── Mobile: eliminate 300ms tap delay on all interactive elements ── */
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+select,
+a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   scroll-behavior: smooth;
 }

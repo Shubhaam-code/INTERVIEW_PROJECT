@@ -3,14 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/img1.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover ensures correct rendering on iPhone notch devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="NextHire AI — Practice interviews with AI intelligence. Role-based mock interviews with smart follow-ups and real-time evaluation." />
     <title>NextHire AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Razorpay Checkout SDK — loaded in <head> with async so it is ready
+      before the user reaches the Pricing page. Loading it at the bottom of
+      <body> (after the app JS) can cause window.Razorpay to be undefined
+      when the payment button is tapped on slow mobile connections.
+    -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
