@@ -13,11 +13,24 @@ const app = express()
 
 
 app.use(express.json())
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174"
+]
+
 app.use(cors({
-     origin:"http://localhost:5173",
-     credentials:true
-}
-))
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    // Allow any localhost origin dynamically to handle Vite port assignment variations
+    if (/^http:\/\/localhost(:\d+)?$/.test(origin) || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  credentials: true
+}))
 app.use(cookieParser())
 app.use("/api/auth",authRouter)
 app.use("/api/user",userRouter)

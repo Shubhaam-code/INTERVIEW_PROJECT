@@ -4,11 +4,13 @@ import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react"
 import axios from 'axios'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { ServerUrl } from '../App'
+import { setUserData } from '../../redux/userSlice'
 
 function Pricing() {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [selectedPlan, setSelectedPlan] = useState("free")
     const [loadingPlan, setLoadingPlan] = useState(null)
    
@@ -83,6 +85,7 @@ function Pricing() {
 
                 handler: async function (response) {
                     try {
+                        setLoadingPlan(plan.id);
                         const verifyData = {
                             razorpayOrderId: response.razorpay_order_id,
                             razorpayPaymentId: response.razorpay_payment_id,
@@ -90,15 +93,18 @@ function Pricing() {
                         }
                         const verifyResult = await axios.post(ServerUrl + "/api/payment/verify", verifyData, { withCredentials: true })
                         if (verifyResult.data.success) {
-                            alert("Payment successful!")
-                            
-                            navigate("/")
+                            console.log("[CORS/Payment] Verification success. Updated User Data:", verifyResult.data.user);
+                            dispatch(setUserData(verifyResult.data.user));
+                            alert("Payment successful!");
+                            navigate("/");
                         } else {
-                            alert(verifyResult.data.message || "Payment verification failed")
+                            alert(verifyResult.data.message || "Payment verification failed");
                         }
                     } catch (err) {
-                        console.error("Verification error", err)
-                        alert("Error verifying payment")
+                        console.error("Verification error", err);
+                        alert("Error verifying payment");
+                    } finally {
+                        setLoadingPlan(null);
                     }
                 },
                 theme:{

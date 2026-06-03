@@ -59,12 +59,19 @@ export const verifyPayment = async(req,res) => {
              return res.status(404).json({success:false,message:"Payment record not found"});
         }
 
+        if (payment.status === "paid") {
+             const currentUser = await User.findById(payment.userId);
+             console.log(`[CORS/Payment] Payment already verified for order ${razorpayOrderId}. User ID: ${payment.userId}`);
+             return res.json({success:true,message:"Payment already verified",user:currentUser});
+        }
+
         payment.status ="paid";
         payment.razorpayPaymentId = razorpayPaymentId;
         payment.signature = signature;
         await payment.save();
 
         const updatedUser = await User.findByIdAndUpdate(payment.userId,{$inc:{credits:payment.credits}},{new:true});
+        console.log(`[CORS/Payment] Payment verified successfully. User ID: ${payment.userId}. Added ${payment.credits} credits. New Total: ${updatedUser.credits}`);
 
         return res.json({success:true,message:"Payment verified successfully",user:updatedUser});
 
