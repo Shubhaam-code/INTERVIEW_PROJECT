@@ -55,7 +55,7 @@ function Auth({ isModel = false }) {
           <div className="bg-black text-white p-2 rounded-lg">
             <BsRobot size={18} />
           </div>
-          <h2 className="font-semibold text-lg">InterviewIQ.AI</h2>
+          <h2 className="font-semibold text-lg">NexHire AI</h2>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-semibold text-center leading-snug mb-4">

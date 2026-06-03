@@ -54,7 +54,7 @@ function Navbar() {
           </div>
 
           <h1 className='font-semibold hidden md:block text-lg'>
-            InterviewIQ.AI
+            NexHire AI
           </h1>
         </div>
 

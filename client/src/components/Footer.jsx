@@ -9,7 +9,7 @@ function Footer() {
           <div className='bg-black text-white p-2 rounded-lg'>
             <BsRobot size={16}/>
           </div>
-          <h2 className='font-semibold'>InterviewIQ.AI</h2>
+          <h2 className='font-semibold'>NexHire AI</h2>
         </div>
         <p className='text-gray-500 text-sm max-w-xl mx-auto'>
           AI-powered interview preparation platform designed to improve
