@@ -3,15 +3,15 @@ import { Route, Routes } from 'react-router-dom'
 import Home from "./pages/Home"
 import Auth from './pages/Auth'
 import InterviewPage from './pages/InterviewPage'
-import axios from 'axios'
-import { useDispatch } from 'react-redux'
-import { setUserData } from '../redux/userSlice'
 import Pricing from './pages/Pricing'
 import InterviewReport from './pages/InterviewReport'
 import InterviewHistory from './pages/InterviewHistory'
 import ProtectedRoute from './components/ProtectedRoute'
+import { useDispatch } from 'react-redux'
+import { setUserData, setToken } from '../redux/userSlice'
+import axiosClient, { ServerUrl } from './utils/axiosClient'
 
-export const ServerUrl = import.meta.env.VITE_SERVER_URL || "https://nexthire-ai-pqlg.onrender.com"
+export { ServerUrl }
 
 function App() {
   const dispatch = useDispatch()
@@ -19,13 +19,18 @@ function App() {
   useEffect(() => {
     const getUser = async () => {
       try {
-        const result = await axios.get(ServerUrl + "/api/user/current-user", {
-          withCredentials: true
-        })
-        dispatch(setUserData(result.data))
+        const result = await axiosClient.get('/api/user/current-user')
+        const data = result.data
+
+        // If server returned a fresh token in the body, persist it
+        if (data?._token) {
+          dispatch(setToken(data._token))
+        }
+
+        dispatch(setUserData(data))
       } catch (error) {
-        console.log(error)
-        // Resolves loading even on error (unauthenticated)
+        console.log('[App] Auth check failed:', error?.response?.status)
+        // Resolves loading state even on unauthenticated error
         dispatch(setUserData(null))
       }
     }
