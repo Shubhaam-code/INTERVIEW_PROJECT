@@ -1,15 +1,27 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Sparkles, X } from "lucide-react";
 import { sidebarNavItems } from "../utils/navigation";
 
-function Sidebar({ activeNav, mobileOpen, setMobileOpen }) {
+/** Routes that require authentication before navigation */
+const PROTECTED_PATHS = ["/interview", "/history"];
+
+function Sidebar({ activeNav, mobileOpen, setMobileOpen, onAuthRequired }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userData } = useSelector((state) => state.user);
 
   const handleNav = (item) => {
     setMobileOpen?.(false);
+
+    // Auth guard: intercept protected routes when user is not logged in
+    if (PROTECTED_PATHS.includes(item.path) && !userData) {
+      onAuthRequired?.(item.label);
+      return;
+    }
+
     if (item.path.startsWith("/#")) {
       if (location.pathname !== "/") {
         navigate("/" + item.path.slice(1));
