@@ -1,23 +1,24 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import AuthModal from "./AuthModal";
 
 /**
  * ProtectedRoute
- * Wraps any route that requires authentication.
- * - If the user IS logged in  → renders children normally.
- * - If the user is NOT logged in → shows the login modal and a blurred
- *   placeholder behind it instead of navigating to the page.
+ * Blocks unauthenticated access to a route.
  *
- * Usage in App.jsx:
- *   <Route path="/interview" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />
+ * - Logged in  → renders children normally.
+ * - Loading    → shows a spinner (suppresses flash-of-modal on page refresh).
+ * - Not logged in → shows AuthModal overlay over a blurred placeholder.
+ *                   Closing the modal navigates the user back to "/" so they
+ *                   are never left on a blank, inaccessible page.
  */
 function ProtectedRoute({ children, featureName = "Practice Mode" }) {
   const { userData, loading } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(true);
 
-  // While we're still fetching the current user from the server, show nothing
-  // to avoid a flash of the login modal for already-logged-in users.
+  // ── 1. Still fetching auth state → spinner ────────────────────────────────
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F5F9FF]">
@@ -26,21 +27,28 @@ function ProtectedRoute({ children, featureName = "Practice Mode" }) {
     );
   }
 
-  // Authenticated → render the protected page as-is.
+  // ── 2. Authenticated → render the page ───────────────────────────────────
   if (userData) {
     return <>{children}</>;
   }
 
-  // Not authenticated → show the auth modal overlaid on a blurred backdrop.
+  // ── 3. Not authenticated → auth modal + blurred backdrop ─────────────────
+  const handleClose = () => {
+    setModalOpen(false);
+    // Navigate back to home so the user isn't stuck on a blank page
+    navigate("/", { replace: true });
+  };
+
   return (
     <>
-      {/* Blurred ghost of the page behind the modal */}
-      <div className="pointer-events-none select-none blur-sm opacity-40 min-h-screen bg-[#F5F9FF]" aria-hidden="true" />
+      {/* Blurred ghost placeholder behind the modal */}
+      <div
+        className="pointer-events-none select-none blur-sm opacity-40 min-h-screen bg-[#F5F9FF]"
+        aria-hidden="true"
+      />
+
       {modalOpen && (
-        <AuthModal
-          onClose={() => setModalOpen(true)} // keep modal open; user must log in or navigate away
-          featureName={featureName}
-        />
+        <AuthModal onClose={handleClose} featureName={featureName} />
       )}
     </>
   );
