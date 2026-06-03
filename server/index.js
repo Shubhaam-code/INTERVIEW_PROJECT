@@ -15,7 +15,12 @@ const app = express()
 app.use(express.json())
 
 const allowedOrigins = [
+<<<<<<< HEAD
   "https://nexthire-ai-zeta.vercel.app",
+=======
+  
+  "https://nexthire-ai-zeta.vercel.app"
+>>>>>>> 93326745089dab75d785a2729363ea531db0bbff
 ]
 
 app.use(cors({
