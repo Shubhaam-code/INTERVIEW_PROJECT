@@ -11,7 +11,7 @@ import InterviewReport from './pages/InterviewReport'
 import InterviewHistory from './pages/InterviewHistory'
 
 
-export const ServerUrl = "https://nexthire-ai-pqlg.onrender.com"
+export const ServerUrl = import.meta.env.VITE_SERVER_URL
 function App() {
   const dispatch = useDispatch()
 
