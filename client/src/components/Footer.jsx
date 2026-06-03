@@ -1,23 +1,22 @@
-import React from 'react'
-import { BsRobot } from 'react-icons/bs'
+import React from "react";
 
 function Footer() {
   return (
-    <div className='bg-[#f3f3f3] flex justify-center px-4 pb-10 py-4 pt-10'>
-      <div className='w-full max-w-6xl bg-white rounded-[24px] shadow-sm border border-gray-200 py-8 px-3 text-center'>
-        <div className='flex justify-center items-center gap-3 mb-3'>
-          <div className='bg-black text-white p-2 rounded-lg'>
-            <BsRobot size={16}/>
+    <footer className="mx-auto mt-8 max-w-[1400px] px-2 pb-4">
+      <div className="card-premium py-8 text-center">
+        <div className="mb-3 flex items-center justify-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 text-sm font-bold text-white">
+            N
           </div>
-          <h2 className='font-semibold'>NexHire AI</h2>
+          <h2 className="font-bold text-[#0F172A]">NextHire AI</h2>
         </div>
-        <p className='text-gray-500 text-sm max-w-xl mx-auto'>
+        <p className="mx-auto max-w-xl text-sm text-[#64748B]">
           AI-powered interview preparation platform designed to improve
           communication skills, technical depth and professional confidence.
         </p>
       </div>
-    </div>
-  )
+    </footer>
+  );
 }
 
-export default Footer
+export default Footer;

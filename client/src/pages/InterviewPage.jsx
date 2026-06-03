@@ -1,37 +1,41 @@
-import React, { useState } from 'react'
-import Step1SetUp from '../components/Step1SetUp'
-import Step2Interview from '../components/Step2Interview'
-import Step3Report from '../components/Step3Report'
+import React, { useState } from "react";
+import Step1SetUp from "../components/Step1SetUp";
+import Step2Interview from "../components/Step2Interview";
+import Step3Report from "../components/Step3Report";
+import DashboardLayout from "../components/layout/DashboardLayout";
 
 function InterviewPage() {
-    const [step,setStep] = useState(1)
-    const [interviewData,setInterviewData] = useState(null)
+  const [step, setStep] = useState(1);
+  const [interviewData, setInterviewData] = useState(null);
+
   return (
-    <div className='min-h-screen bg-gray-50'>
-        {step==1 && (
-            <Step1SetUp onStart={(data)=>{
-                setInterviewData(data)
-                setStep(2)
-            }}/>
-        )}
+    <div className="min-h-screen bg-[#F5F9FF]">
+      {step === 1 && (
+        <Step1SetUp
+          onStart={(data) => {
+            setInterviewData(data);
+            setStep(2);
+          }}
+        />
+      )}
 
-        {step == 2 && (
-            <Step2Interview
-                interviewData={interviewData}
+      {step === 2 && (
+        <Step2Interview
+          interviewData={interviewData}
+          onFinish={(report) => {
+            setInterviewData(report);
+            setStep(3);
+          }}
+        />
+      )}
 
-                    onFinish={(report) => {
-                    setInterviewData(report)
-                    setStep(3)
-               }}
-            />
-            )}
-
-        {step==3 && (
-            <Step3Report report={interviewData}/>
-        )}
-      
+      {step === 3 && (
+        <DashboardLayout activeNav="analytics">
+          <Step3Report report={interviewData} embedded />
+        </DashboardLayout>
+      )}
     </div>
-  )
+  );
 }
 
-export default InterviewPage
+export default InterviewPage;

@@ -1,146 +1,215 @@
-import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { motion } from "framer-motion"
-import { BsRobot, BsCoin } from 'react-icons/bs'
-import { HiOutlineLogout } from "react-icons/hi"
-import { FaUserAstronaut } from "react-icons/fa"
-import { useNavigate } from 'react-router-dom'
-import { ServerUrl } from '../App'
-import { setUserData } from '../../redux/userSlice'
-import axios from 'axios'
-import AuthModel from './AuthModel'
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, Wallet, User, Settings, Coins, LogOut } from "lucide-react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { ServerUrl } from "../App";
+import { setUserData } from "../../redux/userSlice";
+import axios from "axios";
+import AuthModel from "./AuthModel";
+import { topNavLinks } from "../utils/navigation";
 
+function Navbar({ onMenuClick, showMenuButton = false }) {
+  const { userData } = useSelector((state) => state.user);
+  const [showCreditPopup, setShowCreditPopup] = useState(false);
+  const [showUserPopup, setShowUserPopup] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const [showAuth, setShowAuth] = useState(false);
 
-function Navbar() {
-
-  const { userData } = useSelector((state) => state.user)
-
-  const [showCreditPopup, setShowCreditPopup] = useState(false)
-  const [showUserPopup, setShowUserPopup] = useState(false)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const [showAuth, setShowAuth] = useState(false)
-
-
-  const handleLogout = async ()=>{
+  const handleLogout = async () => {
     try {
-      await axios.get(ServerUrl + "/api/auth/logout",
-        {withCredentials:true}
-      )
-      dispatch(setUserData(null))
-      setShowCreditPopup(false)
-      setShowUserPopup(false)
-      navigate("/")
+      await axios.get(ServerUrl + "/api/auth/logout", { withCredentials: true });
+      dispatch(setUserData(null));
+      setShowCreditPopup(false);
+      setShowUserPopup(false);
+      navigate("/");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
+  const requireAuth = (action) => {
+    if (!userData) {
+      setShowAuth(true);
+      return;
+    }
+    action();
+  };
+
+  const closeUserPopup = () => setShowUserPopup(false);
+
+  const goToProfile = () => {
+    closeUserPopup();
+    navigate("/");
+  };
+
+  const goToSettings = () => {
+    closeUserPopup();
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        document.querySelector("#settings")?.scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    } else {
+      document.querySelector("#settings")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const goToCredits = () => {
+    closeUserPopup();
+    navigate("/pricing");
+  };
+
+  const profileMenuItems = [
+    { label: "Profile", icon: User, onClick: goToProfile },
+    { label: "Settings", icon: Settings, onClick: goToSettings },
+    { label: "Credits", icon: Coins, onClick: goToCredits },
+    { label: "Logout", icon: LogOut, onClick: handleLogout, danger: true },
+  ];
+
   return (
-    <div className='bg-[#f3f3f3] flex justify-center px-4 pt-6'>
-
-      <motion.div
-        initial={{ opacity: 0, y: -40 }}
+    <>
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className='w-full max-w-6xl bg-white rounded-[24px]
-        shadow-sm border border-gray-200 px-8 py-4
-        flex justify-between items-center'
+        className="sticky top-0 z-30 mx-4 mb-4 mt-4 flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white/80 px-4 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl sm:px-6"
       >
-
-        {/* Logo */}
-        <div className='flex items-center gap-3 cursor-pointer'>
-          <div className='bg-black text-white p-2 rounded-lg'>
-            <BsRobot size={18} />
-          </div>
-
-          <h1 className='font-semibold hidden md:block text-lg'>
-            NexHire AI
-          </h1>
+        <div className="flex items-center gap-3">
+          {showMenuButton && (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+            >
+              <Menu size={22} />
+            </button>
+          )}
+          <nav className="hidden items-center gap-1 md:flex">
+            {topNavLinks.map((link) => (
+              <Link
+                key={link.label}
+                to={link.path.startsWith("/#") ? "/" : link.path}
+                onClick={(e) => {
+                  if (link.path.startsWith("/#")) {
+                    e.preventDefault();
+                    if (location.pathname !== "/") navigate("/");
+                    setTimeout(() => {
+                      document
+                        .querySelector(link.path.replace("/", ""))
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }, 100);
+                  }
+                }}
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  location.pathname === link.path
+                    ? "text-[#2563EB]"
+                    : "text-[#64748B] hover:text-[#0F172A]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </div>
 
-        {/* Right Side */}
-        <div className='flex items-center gap-6'>
-
-          {/* Credits */}
-          <div className='relative'>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="relative">
             <button
-              onClick={() => {
-                if(!userData){
-                  setShowAuth(true)
-                  return;
-                } 
-                setShowCreditPopup(!showCreditPopup) ,setShowUserPopup(false)}}
-              className='flex items-center gap-2 bg-gray-200
-              px-4 py-2 rounded-full text-md
-              hover:bg-gray-300 transition'
+              type="button"
+              onClick={() =>
+                requireAuth(() => {
+                  setShowCreditPopup(!showCreditPopup);
+                  setShowUserPopup(false);
+                })
+              }
+              className="flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-[#2563EB] transition hover:bg-blue-100"
             >
-              <BsCoin size={20} />
-              {userData?.credits || 0}
+              <Wallet size={16} />
+              <span>{userData?.credits ?? 0}</span>
             </button>
-            {/* showCreditpop true hai to andar ka code run to hoga */}
             {showCreditPopup && (
-              <div className='absolute right-[-50px] mt-3 w-64
-              bg-white shadow-xl border border-gray-200 rounded p-5 z-50'>
-                <p className='text-sm text_gray-600 mb-4'>Need more credits to continue interviews?</p>
-                <button onClick={()=>navigate('/pricing')}
-                className='w-full bg-black text-white py-2 
-                rounded-lg text-sm'
+              <div className="absolute right-0 z-50 mt-3 w-64 rounded-2xl border border-gray-100 bg-white p-5 shadow-xl">
+                <p className="mb-4 text-sm text-[#64748B]">
+                  Need more credits to continue interviews?
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/pricing")}
+                  className="btn-primary w-full py-2.5 text-sm"
                 >
                   Buy more credits
                 </button>
-
               </div>
             )}
           </div>
 
-          {/* User Avatar */}
-          <div className='relative'>
+          <div className="relative">
             <button
-              onClick={()=>{
-                if(!userData){
-                  setShowAuth(true)
-                  return;
-                }  
-                setShowUserPopup(!showUserPopup),setShowCreditPopup(false)}}
-              className='w-9 h-9 bg-black text-white
-              rounded-full flex items-center
-              justify-center font-semibold'
-            >
-
-              {
-                userData?.name
-                  ? userData.name.slice(0, 1).toUpperCase()
-                  : <FaUserAstronaut size={16} />
+              type="button"
+              onClick={() =>
+                requireAuth(() => {
+                  setShowUserPopup(!showUserPopup);
+                  setShowCreditPopup(false);
+                })
               }
-
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-500 text-sm font-bold text-white shadow-md shadow-blue-500/30 transition hover:shadow-lg hover:shadow-blue-500/40"
+            >
+              {userData?.name
+                ? userData.name.slice(0, 1).toUpperCase()
+                : "?"}
             </button>
-            {showUserPopup && (
-              <div className='absolute right-0 mt-3 w-48 bg-white
-              shadow-xl border border-gray-200 rounded-xl p-4
-              z-50'>
-                <p className='text-md text-blue-500 font-medium
-                mb-1'>{userData?.name}</p>
-                <button onClick={()=>navigate("/history")}
-                className='w-full text-left text-sm py-2
-                hover:text-black text-gray-600'>
-                  Interview History
-                  </button>
 
-                <button onClick={()=>handleLogout()}
-                className=' w-full text-left text-sm py-2
-                flex items-center gap-2 text-red-500'>
-                  <HiOutlineLogout />
-                  Logout</button>
+            <AnimatePresence>
+              {showUserPopup && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute right-0 z-50 mt-3 w-56 overflow-hidden rounded-xl border border-white/60 bg-white/90 p-2 shadow-[0_8px_30px_rgb(0,0,0,0.1)] backdrop-blur-xl"
+                >
+                  <div className="border-b border-gray-100/80 px-3 py-3">
+                    <p className="truncate font-semibold text-[#0F172A]">
+                      {userData?.name}
+                    </p>
+                    {userData?.email && (
+                      <p className="truncate text-xs text-[#64748B]">
+                        {userData.email}
+                      </p>
+                    )}
+                  </div>
 
-              </div>)}
+                  <div className="py-1">
+                    {profileMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={item.onClick}
+                          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition duration-200 ${
+                            item.danger
+                              ? "text-red-500 hover:bg-red-50"
+                              : "text-[#64748B] hover:bg-blue-50 hover:text-[#2563EB]"
+                          }`}
+                        >
+                          <Icon size={16} />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-
         </div>
-
-      </motion.div>
-      {showAuth && <AuthModel onClose={()=>setShowAuth(false)}/>}
-    </div>
-  )
+      </motion.header>
+      {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
+    </>
+  );
 }
 
-export default Navbar
+export default Navbar;

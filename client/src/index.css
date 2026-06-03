@@ -1,1 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-surface: #f5f9ff;
+  --color-card: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+  background-color: #f5f9ff;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.card-premium {
+  @apply rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-3 font-semibold text-white shadow-md shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-6 py-3 font-semibold text-blue-600 transition-all duration-300 hover:border-blue-300 hover:bg-blue-50;
+}
+
+.input-premium {
+  @apply w-full rounded-xl border border-gray-200 bg-white py-3.5 pl-12 pr-4 text-[#0f172a] outline-none transition-all duration-300 placeholder:text-[#64748b] focus:border-blue-400 focus:ring-2 focus:ring-blue-100 hover:border-gray-300;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent;
+}
