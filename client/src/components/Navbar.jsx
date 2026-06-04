@@ -3,9 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Wallet, User, Settings, Coins, LogOut } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { ServerUrl } from "../App";
-import { setUserData } from "../../redux/userSlice";
-import axios from "axios";
+import { clearAuth } from "../../redux/userSlice";
+import axiosClient from "../utils/axiosClient";
 import AuthModel from "./AuthModel";
 import { topNavLinks } from "../utils/navigation";
 
@@ -20,13 +19,17 @@ function Navbar({ onMenuClick, showMenuButton = false }) {
 
   const handleLogout = async () => {
     try {
-      await axios.get(ServerUrl + "/api/auth/logout", { withCredentials: true });
-      dispatch(setUserData(null));
+      // axiosClient sends Bearer token so logout works on mobile too
+      await axiosClient.get("/api/auth/logout");
+    } catch (error) {
+      // Logout server-side failure is non-critical — clear client state anyway
+      console.warn("[Logout] Server logout failed (non-critical):", error?.response?.status);
+    } finally {
+      // Always clear local auth state regardless of server response
+      dispatch(clearAuth());
       setShowCreditPopup(false);
       setShowUserPopup(false);
       navigate("/");
-    } catch (error) {
-      console.log(error);
     }
   };
 

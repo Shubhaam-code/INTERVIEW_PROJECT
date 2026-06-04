@@ -4,15 +4,14 @@
  * Centralised Axios instance with:
  *
  *  1. Automatic Bearer-token injection from localStorage
- *     → Fixes the "user does not have a token" error on mobile
- *       because cross-origin cookies are blocked on Android Chrome /
- *       in-app browsers (Instagram, WhatsApp, etc.)
+ *     → Fixes auth failures on mobile where cross-origin cookies are
+ *       blocked on Android Chrome / in-app browsers (Instagram, WhatsApp)
  *
  *  2. withCredentials: true kept for cookie-based auth on desktop
  *
  *  3. 401/403 interceptor:
- *     → Clears stale token + dispatches clearAuth
- *     → Redirects to login page cleanly
+ *     → Clears stale token from localStorage AND Redux state
+ *     → Prevents the "logged in UI but all API calls fail" desync
  *
  * Usage: import axiosClient from '../utils/axiosClient'
  *        axiosClient.post('/api/interview/resume', formdata)
@@ -30,7 +29,7 @@ const ServerUrl =
 const axiosClient = axios.create({
   baseURL: ServerUrl,
   withCredentials: true,   // keep for cookie-based desktop sessions
-  timeout: 30000,          // 30-second timeout for slow mobile networks
+  timeout: 60000,          // 60-second timeout (mobile networks can be slow)
 })
 
 /* ── Request interceptor: attach Bearer token ─────────────────── */
@@ -40,32 +39,40 @@ axiosClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
-    console.debug('[API]', config.method?.toUpperCase(), config.url)
+    console.debug('[API]', config.method?.toUpperCase(), config.url,
+      token ? '(Bearer ✓)' : '(no token)')
     return config
   },
   (error) => Promise.reject(error)
 )
 
 /* ── Response interceptor: handle auth errors ────────────────────
-   On 401/403 we clear the stale token and redirect to home.
-   The user will be prompted to log in again by ProtectedRoute.   */
+   On 401/403 we clear the stale token from both localStorage and
+   Redux. Without the Redux clear the UI stays "logged in" but every
+   API call silently fails — very confusing on mobile.              */
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status
-    const message = error?.response?.data?.message || ''
 
-    if (
-      status === 401 ||
-      status === 403 ||
-      message.includes('does not have a token') ||
-      message.includes('VerifyToken')
-    ) {
+    if (status === 401 || status === 403) {
       console.warn('[Auth] Token invalid/expired — clearing session')
       clearToken()
-      // Soft redirect: let the app's ProtectedRoute handle the UI
-      // (don't do window.location.href here — it causes a full reload
-      //  that loses React state and looks broken on mobile)
+
+      // Dynamically import the store to avoid circular dependency
+      // (axiosClient → store → axiosClient chain).
+      // Using dynamic import means we don't need to import store at
+      // module-load time.
+      import('../../redux/store').then((module) => {
+        const store = module.default
+        // clearAuth sets userData=null, token=null, loading=false
+        import('../../redux/userSlice').then(({ clearAuth }) => {
+          store.dispatch(clearAuth())
+        })
+      }).catch(() => {
+        // Fallback: just clear localStorage (Redux will catch up on next render)
+        clearToken()
+      })
     }
 
     return Promise.reject(error)

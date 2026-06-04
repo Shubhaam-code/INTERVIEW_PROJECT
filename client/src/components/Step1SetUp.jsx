@@ -12,8 +12,7 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-import axios from "axios";
-import { ServerUrl } from "../App";
+import axiosClient from "../utils/axiosClient";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../../redux/userSlice";
 import setupImg from "../assets/images/interviewboy.png";
@@ -85,10 +84,13 @@ function Step1SetUp({ onStart }) {
     formdata.append("resume", resumeFile);
 
     try {
-      const result = await axios.post(
-        ServerUrl + "/api/interview/resume",
-        formdata,
-        { withCredentials: true }
+      // axiosClient automatically attaches Authorization: Bearer <token>
+      // from localStorage — required for mobile where cookies are blocked.
+      // DO NOT set Content-Type manually — Axios auto-sets multipart/form-data
+      // with the correct boundary when you pass a FormData object.
+      const result = await axiosClient.post(
+        "/api/interview/resume",
+        formdata
       );
 
       setRole(result.data.role || "");
@@ -100,9 +102,17 @@ function Step1SetUp({ onStart }) {
       setAnalyzing(false);
       showToast("Resume analyzed successfully!", "success");
     } catch (error) {
-      console.error("[Resume Upload Error]", error);
+      console.error("[Resume Upload Error]", error?.response?.status, error?.response?.data);
       setAnalyzing(false);
-      showToast("Failed to analyze resume. Please try again.");
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        showToast("Session expired. Please log in again.");
+      } else {
+        showToast(
+          error?.response?.data?.message ||
+            "Failed to analyze resume. Please try again."
+        );
+      }
     }
   };
 
@@ -122,10 +132,10 @@ function Step1SetUp({ onStart }) {
     setLoading(true);
 
     try {
-      const result = await axios.post(
-        ServerUrl + "/api/interview/generate-questions",
-        { role, experience, mode, resumeText, projects, skills },
-        { withCredentials: true }
+      // axiosClient attaches Authorization: Bearer header for mobile
+      const result = await axiosClient.post(
+        "/api/interview/generate-questions",
+        { role, experience, mode, resumeText, projects, skills }
       );
 
       console.log("[Interview] Questions generated:", result.data);
@@ -138,13 +148,13 @@ function Step1SetUp({ onStart }) {
       setLoading(false);
       onStart(result.data);
     } catch (error) {
-      console.error("[Interview Start Error]", error);
+      console.error("[Interview Start Error]", error?.response?.status, error?.response?.data);
       setLoading(false);
 
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
         showToast("Session expired. Please log in again.");
-      } else if (status === 402) {
+      } else if (status === 400 && error?.response?.data?.message?.includes("credits")) {
         showToast("Insufficient credits. Please upgrade your plan.");
       } else {
         showToast(

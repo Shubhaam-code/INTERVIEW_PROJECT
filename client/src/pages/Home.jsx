@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../utils/axiosClient";
 import {
   Play,
   Clock,
@@ -37,7 +37,6 @@ import "react-circular-progressbar/dist/styles.css";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import AuthModel from "../components/AuthModel";
 import Footer from "../components/Footer";
-import { ServerUrl } from "../App";
 
 import heroImg from "../assets/images/boy.png";
 import evalImg from "../assets/images/ai-ans.png";
@@ -166,13 +165,11 @@ function Home() {
     if (!userData) return;
     const fetchInterviews = async () => {
       try {
-        const result = await axios.get(
-          ServerUrl + "/api/interview/get-interview",
-          { withCredentials: true }
-        );
+        // axiosClient sends Authorization: Bearer header for mobile
+        const result = await axiosClient.get("/api/interview/get-interview");
         setInterviews(result.data.interview || []);
       } catch (error) {
-        console.log(error);
+        console.error("[Home] Fetch interviews error:", error?.response?.status);
       }
     };
     fetchInterviews();

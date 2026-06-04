@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ServerUrl } from "../App";
-import axios from "axios";
+import axiosClient from "../utils/axiosClient";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
@@ -13,13 +12,11 @@ function InterviewHistory() {
   useEffect(() => {
     const getMyInterviews = async () => {
       try {
-        const result = await axios.get(
-          ServerUrl + "/api/interview/get-interview",
-          { withCredentials: true }
-        );
+        // axiosClient sends Authorization: Bearer header for mobile
+        const result = await axiosClient.get("/api/interview/get-interview");
         setInterviews(result.data.interview || []);
       } catch (error) {
-        console.log(error);
+        console.error("[InterviewHistory] Fetch error:", error?.response?.status);
       }
     };
     getMyInterviews();

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosClient from "../utils/axiosClient";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ServerUrl } from "../App";
 import Step3Report from "../components/Step3Report";
 
 function InterviewReport() {
@@ -12,13 +11,11 @@ function InterviewReport() {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const result = await axios.get(
-          ServerUrl + "/api/interview/report/" + id,
-          { withCredentials: true }
-        );
+        // axiosClient sends Authorization: Bearer header for mobile
+        const result = await axiosClient.get(`/api/interview/report/${id}`);
         setReport(result.data);
       } catch (error) {
-        console.log(error);
+        console.error("[InterviewReport] Fetch error:", error?.response?.status);
       }
     };
     fetchReport();

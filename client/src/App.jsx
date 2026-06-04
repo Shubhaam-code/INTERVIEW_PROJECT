@@ -28,6 +28,7 @@ function App() {
         }
 
         dispatch(setUserData(data))
+        console.log('[App] Auth check:', data ? `logged in as ${data.email}` : 'not authenticated')
       } catch (error) {
         console.log('[App] Auth check failed:', error?.response?.status)
         // Resolves loading state even on unauthenticated error

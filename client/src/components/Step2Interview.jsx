@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, ArrowRight, Bot, Radio, AlertCircle } from "lucide-react";
-import axios from "axios";
-import { ServerUrl } from "../App";
+import axiosClient from "../utils/axiosClient";
 import femaleVideo from "../assets/videos/female-ai.mp4";
 import maleVideo from "../assets/videos/male-ai.mp4";
 import Timmer from "./Timmer";
@@ -371,21 +370,21 @@ function Step2Interview({ interviewData, onFinish }) {
     stopMic();
     setIsSubmitting(true);
     try {
-      const result = await axios.post(
-        ServerUrl + "/api/interview/submit-answer",
+      // axiosClient attaches Authorization: Bearer header for mobile
+      const result = await axiosClient.post(
+        "/api/interview/submit-answer",
         {
           interviewId,
           questionIndex: currentIndex,
           answer,
           timeTaken: currentQuestion.timeLimit - timeLeft,
-        },
-        { withCredentials: true }
+        }
       );
       setFeedback(result.data.feedback);
       speakText(result.data.feedback);
       setIsSubmitting(false);
     } catch (error) {
-      console.error("[Submit Answer Error]", error);
+      console.error("[Submit Answer Error]", error?.response?.status, error?.response?.data);
       setIsSubmitting(false);
     }
   };
@@ -409,14 +408,14 @@ function Step2Interview({ interviewData, onFinish }) {
     setIsMicOn(false);
     isMicOnRef.current = false;
     try {
-      const result = await axios.post(
-        ServerUrl + "/api/interview/finish",
-        { interviewId },
-        { withCredentials: true }
+      // axiosClient attaches Authorization: Bearer header for mobile
+      const result = await axiosClient.post(
+        "/api/interview/finish",
+        { interviewId }
       );
       onFinish(result.data);
     } catch (error) {
-      console.error("[Finish Interview Error]", error);
+      console.error("[Finish Interview Error]", error?.response?.status, error?.response?.data);
     }
   };
 

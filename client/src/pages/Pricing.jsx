@@ -10,9 +10,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import axiosClient from "../utils/axiosClient";
 import { useDispatch, useSelector } from "react-redux";
-import { ServerUrl } from "../App";
 import { setUserData } from "../../redux/userSlice";
 import DashboardLayout from "../components/layout/DashboardLayout";
 
@@ -253,15 +252,15 @@ function Pricing() {
 
     let order;
     try {
-      const result = await axios.post(
-        ServerUrl + "/api/payment/order",
-        { planId: plan.id, amount: plan.amount, credits: plan.credits },
-        { withCredentials: true }
+      // axiosClient attaches Authorization: Bearer header for mobile
+      const result = await axiosClient.post(
+        "/api/payment/order",
+        { planId: plan.id, amount: plan.amount, credits: plan.credits }
       );
       order = result.data;
       console.log("[Payment] Order created:", order.id);
     } catch (err) {
-      console.error("[Payment] Order creation failed:", err);
+      console.error("[Payment] Order creation failed:", err?.response?.status, err?.response?.data);
       const status = err?.response?.status;
       if (status === 401 || status === 403) {
         showToast("Session expired. Please log in again.");
@@ -314,14 +313,13 @@ function Pricing() {
           setLoadingPlan(plan.id);
 
           try {
-            const verifyResult = await axios.post(
-              ServerUrl + "/api/payment/verify",
+            const verifyResult = await axiosClient.post(
+              "/api/payment/verify",
               {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 signature: response.razorpay_signature,
-              },
-              { withCredentials: true }
+              }
             );
 
             if (verifyResult.data.success) {
